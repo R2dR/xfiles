@@ -1,0 +1,37 @@
+h1. XFiles
+
+File swap server built on Sinatra Ruby server.  Easily download and upload files between computers and phones more easily than FTP.
+
+h2. Dependencies
+
+Requires
+
+* Ruby 1.9 or greater
+* Sinatra gem
+
+h2. Usage
+
+Check the options
+<pre>
+$ xfiles -h
+</pre>
+
+Change to the directory with the files you want to share and start the server with access code
+<pre>
+$ cd ~/myfiles
+$ xfiles 1234
+Starting xFiles Server with access code: 123
+xFiles Server available at: http://192.168.1.100:2021
+Server will live for 30 minutes
+[2013-06-27 15:11:59] INFO  WEBrick 1.3.1
+[2013-06-27 15:11:59] INFO  ruby 1.9.3 (2013-01-15) [x86_64-linux]
+== Sinatra/1.4.3 has taken the stage on 2021 for development with backup from WEBrick
+[2013-06-27 15:11:59] INFO  WEBrick::HTTPServer#start: pid=6989 port=2021
+</pre>
+
+h2. Options
+
+Control access, timeout periods and file overwriting preferences.  See xfiles -h.
+ 
+
+
