@@ -28,6 +28,13 @@ Server will live for 30 minutes
 $
 </pre>
 
+h2. Setup for Linux
+Assuming you have a Ruby version 1.9 or greater installed
+<pre>$ gem install sinatra
+$ sudo cp xfiles /usr/local/bin/
+$ sudo chmod 777 /usr/local/bin/xfiles
+</pre>
+
 h2. Options
 
 Control access, timeout periods and file overwriting preferences.  See xfiles -h.
