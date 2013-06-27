@@ -1,10 +1,10 @@
 h1. XFiles
 
-File swap server built on Sinatra Ruby server.  Easily download and upload files between computers and phones more easily than FTP.
+File transfer server built with Ruby and Sinatra.  Easily download and upload files between computers and phones using your web browser.  Far simpler to share files than with FTP.
 
 h2. Dependencies
 
-Requires
+Requirements:
 
 * Ruby 1.9 or greater
 * Sinatra gem
@@ -16,7 +16,7 @@ Check the options
 $ xfiles -h
 </pre>
 
-Change to the directory with the files you want to share and start the server with access code
+To transfer files, change to the directory with the files you want to share and start the server with access code
 <pre>
 $ cd ~/myfiles
 $ xfiles 1234
