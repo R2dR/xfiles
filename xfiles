@@ -5,7 +5,7 @@ require 'ostruct'
 require 'rubygems'
 require 'optparse'
 
-#colorization 
+#colorization
 class String
   def colorize(color_code) "\e[#{color_code}m#{self}\e[0m" end
   def red() colorize(31) end
@@ -19,82 +19,82 @@ class String
 end
 
 class XFilesConfig < OpenStruct
-	def timeout?
-		!(self.timeout_state == false)
-	end
-	def timeout
-		return self.timeout_override if self.timeout_override
-		self.secure? ? self.default_secure_timeout : self.default_insecure_timeout
-	end
-	def disable_timeout
-		self.timeout_state = false
-	end
-	def timeout=(seconds)
-		self.timeout_override=seconds
-	end
-	def secure? 
-		!!(self.secure && self.secure.to_sym != :none)
-	end
-	def overwrite?
-		!!self.overwrite
-	end
-	def versioned?
-		!!self.versioned
-	end
+  def timeout?
+    !(self.timeout_state == false)
+  end
+  def timeout
+    return self.timeout_override if self.timeout_override
+    self.secure? ? self.default_secure_timeout : self.default_insecure_timeout
+  end
+  def disable_timeout
+    self.timeout_state = false
+  end
+  def timeout=(seconds)
+    self.timeout_override=seconds
+  end
+  def secure?
+    !!(self.secure && self.secure.to_sym != :none)
+  end
+  def overwrite?
+    !!self.overwrite
+  end
+  def versioned?
+    !!self.versioned
+  end
 end
 
-config = XFilesConfig.new( 
-	:secure=>:access_code,
-	:default_insecure_timeout=>2*60,
-	:default_secure_timeout=>30*60,
-	:overwrite=>false,
-	:versioned=>false,
-	:name=>'xFiles Server'
+config = XFilesConfig.new(
+  :secure=>:access_code,
+  :default_insecure_timeout=>2*60,
+  :default_secure_timeout=>30*60,
+  :overwrite=>false,
+  :versioned=>false,
+  :name=>'xFiles Server'
 )
 
 optparse = OptionParser.new do |opts|
-	opts.banner="Usage: #{File.basename($0)} [ACCESS-CODE] [OPTIONS]"
-	opts.program_name=config.name
-	opts.release=VERSION
-	opts.separator ''
-	opts.separator "  Access options:"
-	opts.on('--no-auth', 'Do not require authorization') do 
-		config.secure = nil
-	end
-	opts.on('--timeout=SECONDS', Integer, "Overrides default timeout") do |seconds|
-		config.timeout=seconds.to_i
-	end
-	opts.on('--no-timeout', "Do not use timeout") do 
-		config.disable_timeout
-	end
-	opts.separator ''
-	opts.separator "  Upload options:"
-	opts.on('--version-uploads', "Add version number to pre-existing files") do
-		config.versioned = true
-	end
-	opts.on('--overwrite', "Overwrite pre-existing files") do
-		config.overwrite=true
-	end
-	opts.separator ''
-	opts.on('--debug') do
-		require 'debugger'
+  opts.banner="Usage: #{File.basename($0)} [ACCESS-CODE] [OPTIONS]"
+  opts.program_name=config.name
+  opts.release=VERSION
+  opts.separator ''
+  opts.separator "  Access options:"
+  opts.on('--no-auth', 'Do not require authorization') do
+    config.secure = nil
+  end
+  opts.on('--timeout=SECONDS', Integer, "Overrides default timeout") do |seconds|
+    config.timeout=seconds.to_i
+  end
+  opts.on('--no-timeout', "Do not use timeout") do
+    config.disable_timeout
+  end
+  opts.separator ''
+  opts.separator "  Upload options:"
+  opts.on('--version-uploads', "Add version number to pre-existing files") do
+    config.versioned = true
+  end
+  opts.on('--overwrite', "Overwrite pre-existing files") do
+    config.overwrite=true
+  end
+  opts.separator ''
+  opts.on('--debug') do
+    require 'debugger'
     Debugger.settings[:autoeval]=true
     Debugger.settings[:autolist]=1
     Debugger.settings[:listsize]=20
- 	end
-		
-	opts.on('-v', '--version', 'Show version') do
-		puts VERSION
-		exit
-	end
-	opts.separator ''
+   end
+
+  opts.on('-v', '--version', 'Show version') do
+    puts VERSION
+    exit
+  end
+  opts.separator ''
 end
 
 optparse.parse!
 if config.secure? && (ARGV[0].nil? || ARGV[0] !~ /[_0-9a-zA-Z]+/)
-	puts "First argument must be an access code".orange
-	puts
-	exit
+  puts "First argument must be an access code".orange
+  puts
+  exit
 end
 
 ACCESS_CODE||=ARGV[0]
@@ -103,34 +103,34 @@ start_message << 'NO ACCESS CODE'.orange unless config.secure?
 start_message << 'access code: '.green + ACCESS_CODE.orange if config.secure?
 puts start_message.join(' ')
 unless config.secure?
-	puts "WARNING: Anyone can download or upload files without an access code".orange
+  puts "WARNING: Anyone can download or upload files without an access code".orange
 end
 
 addresses = Socket.ip_address_list.map{|a| a.ip_address}.select do |ip|
-	ip =~ /^([0-9]{1,3}\.){3}[0-9]+$/ && ip != "127.0.0.1"
+  ip =~ /^([0-9]{1,3}\.){3}[0-9]+$/ && ip != "127.0.0.1"
 end.map{|ip| "http://#{ip}:2021" }
 puts "#{config.name} available at: ".green + addresses.join(', ').yellow
 
-def seconds_by_unit(seconds) 
-	case
-	when seconds/60 == 0 then "#{seconds} seconds"
-	when seconds/3600 == 0 then "%0.1f minutes" % (seconds*1.0/60)
-	when seconds/86400 == 0 then "%0.1f hours" % (seconds*1.0/3600)
-	else "%0.1f days" % (seconds*1.0/86400)
-	end.sub(/\.0+\s/, ' ')
+def seconds_by_unit(seconds)
+  case
+  when seconds/60 == 0 then "#{seconds} seconds"
+  when seconds/3600 == 0 then "%0.1f minutes" % (seconds*1.0/60)
+  when seconds/86400 == 0 then "%0.1f hours" % (seconds*1.0/3600)
+  else "%0.1f days" % (seconds*1.0/86400)
+  end.sub(/\.0+\s/, ' ')
 end
 
 # -- START SINATRA
 require 'sinatra'
 
 if config.timeout?
-	t=Thread.new(config.timeout) do |seconds|
-		text = seconds_by_unit(seconds)
-		puts "Server will live for #{text}".green
-		sleep(seconds)
-		puts "Server has timed out after #{text}.  Ending session now.".orange
-		Process.kill 'TERM', Process.pid
-	end
+  t=Thread.new(config.timeout) do |seconds|
+    text = seconds_by_unit(seconds)
+    puts "Server will live for #{text}".green
+    sleep(seconds)
+    puts "Server has timed out after #{text}.  Ending session now.".orange
+    Process.kill 'TERM', Process.pid
+  end
 end
 
 # -- Sinatra Controller code starts here
@@ -147,260 +147,260 @@ enable :sessions
 
 FLASH={}
 def clear_flash
-	FLASH.clear
+  FLASH.clear
 end
 
 def flash
-	FLASH
+  FLASH
 end
 
 configure do
-	mime_type :css, 'text/css'
+  mime_type :css, 'text/css'
 end
 
 before do
-	expires 0, :public, :must_revalidate
+  expires 0, :public, :must_revalidate
 end
 
 get "/" do
-	@hostname=Socket.gethostname
-	@config = config
-	@pwd=Dir.pwd
-	@files=Dir.glob('*').select{|fn| File.file?(fn) }.sort
-	@authorized=session[:access_code] && session[:access_code] == ACCESS_CODE
+  @hostname=Socket.gethostname
+  @config = config
+  @pwd=Dir.pwd
+  @files=Dir.glob('*').select{|fn| File.file?(fn) }.sort
+  @authorized=session[:access_code] && session[:access_code] == ACCESS_CODE
   #haml :upload_haml
   output = if config.secure? && !@authorized
-		erb :access_erb
-	else
-	  erb :upload_erb
-	end
-	clear_flash
-	output
+    erb :access_erb
+  else
+    erb :upload_erb
+  end
+  clear_flash
+  output
 end
 
 get "/css/style.css" do
-	content_type :css	
-	erb :style
+  content_type :css
+  erb :style
 end
 
 get "/download/:filename" do |filename|
-	if File.exist?(filename)
-		puts "Sent file '#{filename}' to #{request.ip}".yellow
-		send_file filename, :filename=>filename, :type=>"application/octet-stream"
-	else
-		redirect "/"
-	end
+  if File.exist?(filename)
+    puts "Sent file '#{filename}' to #{request.ip}".yellow
+    send_file filename, :filename=>filename, :type=>"application/octet-stream"
+  else
+    redirect "/"
+  end
 end
 
 post "/access" do
-	if params[:code] == ACCESS_CODE
-		session[:access_code] = ACCESS_CODE
-		puts "Access granted to #{request.ip}".green
-	else
-		flash[:error]='Incorrect access code!'
-		puts "Access denied to #{request.ip}".orange
-	end
-	redirect "/"
+  if params[:code] == ACCESS_CODE
+    session[:access_code] = ACCESS_CODE
+    puts "Access granted to #{request.ip}".green
+  else
+    flash[:error]='Incorrect access code!'
+    puts "Access denied to #{request.ip}".orange
+  end
+  redirect "/"
 end
 
 get "/access" do
-	redirect "/"
+  redirect "/"
 end
 
 get "/upload" do
-	redirect "/"
-end    
+  redirect "/"
+end
 
 def versioned_filename(filename, version)
-	parts = filename.split(/\./)
-	parts[0] = parts[0] + "(v#{version})"
-	parts.join('.')
+  parts = filename.split(/\./)
+  parts[0] = parts[0] + "(v#{version})"
+  parts.join('.')
 end
 def unversioned_filename(filename)
-	filename.sub(/(\w)\(v\d+\)(\.|$)/, '\1\2')
+  filename.sub(/(\w)\(v\d+\)(\.|$)/, '\1\2')
 end
 
 def find_free_version_number(filename)
-	version = 1
-	while File.exist?(versioned_filename(filename, version)) do
-		version += 1;
-	end
-	version
+  version = 1
+  while File.exist?(versioned_filename(filename, version)) do
+    version += 1;
+  end
+  version
 end
 
 def advance_versions(filename, version)
-	moveto = versioned_filename(filename, version)
-	version.downto(2) do |v|
-		orig = versioned_filename(filename, v-1)
-		File.rename(orig, moveto) if File.exist?(orig)
-		moveto = orig
-	end
-	File.rename(filename, moveto) if File.exist?(filename)
+  moveto = versioned_filename(filename, version)
+  version.downto(2) do |v|
+    orig = versioned_filename(filename, v-1)
+    File.rename(orig, moveto) if File.exist?(orig)
+    moveto = orig
+  end
+  File.rename(filename, moveto) if File.exist?(filename)
 end
 
-def file_size(filename) 
-	size = File.size(filename)*1.0
-	for index in 0..3
-		break if size < 1024
-		size /= 1024
-	end
-	"%.2f %s" % [size, %w(bytes KB MB GB)[index]]
+def file_size(filename)
+  size = File.size(filename)*1.0
+  for index in 0..3
+    break if size < 1024
+    size /= 1024
+  end
+  "%.2f %s" % [size, %w(bytes KB MB GB)[index]]
 end
 
 post "/upload" do
-	if params['file'] && params['file'][:filename] && !params['file'][:filename].empty?
-		filename=params['file'][:filename]
-		unless config.overwrite?
-			if config.versioned?
-				filename = unversioned_filename(filename)
-				free_version = find_free_version_number(filename)
-				advance_versions(filename, free_version)
-			else
-				index=0
-				while File.exist?(filename) do
-					index+=1
-					filename=params['file'][:filename].sub(/\./, "(#{index}).")
-				end
-			end
-		end
-  	File.open(filename, "w") {|f| f.write(params['file'][:tempfile].read) }
-  	puts "Received file '#{filename}' (#{file_size(filename)}) from #{request.ip}".yellow
- 	end
- 	redirect "/"
+  if params['file'] && params['file'][:filename] && !params['file'][:filename].empty?
+    filename=params['file'][:filename]
+    unless config.overwrite?
+      if config.versioned?
+        filename = unversioned_filename(filename)
+        free_version = find_free_version_number(filename)
+        advance_versions(filename, free_version)
+      else
+        index=0
+        while File.exist?(filename) do
+          index+=1
+          filename=params['file'][:filename].sub(/\./, "(#{index}).")
+        end
+      end
+    end
+    File.open(filename, "w") {|f| f.write(params['file'][:tempfile].read) }
+    puts "Received file '#{filename}' (#{file_size(filename)}) from #{request.ip}".yellow
+   end
+   redirect "/"
 end
 
-	
+
 __END__
 
 @@ style
 
 body {
-	margin: 0;
-	padding: 0;
+  margin: 0;
+  padding: 0;
 }
 
 #page {
-	margin: 0;
-	padding-bottom: 65px;
+  margin: 0;
+  padding-bottom: 65px;
 }
 #header {
-	margin-bottom: 15px;
-	width: 100%;
-	background-color: lightblue;
+  margin-bottom: 15px;
+  width: 100%;
+  background-color: lightblue;
 }
 #directory {
-	margin-top: 25px;
+  margin-top: 25px;
 }
 h3 {
-	margin-top: 0;
-	margin-bottom: 2px;
-	font-weight: normal;
+  margin-top: 0;
+  margin-bottom: 2px;
+  font-weight: normal;
 }
 hr {
-	margin-top: 0;
-	margin-bottom: 5px;
+  margin-top: 0;
+  margin-bottom: 5px;
 }
 #files {
-	font-weight: bold;
+  font-weight: bold;
 }
 form#upload {
-	margin-top: 20px;
+  margin-top: 20px;
 }
 #page>h1, #page>h3, #page>form, #page>ul, #page>p {
-	padding-left: 20px;
+  padding-left: 20px;
 }
 #page>ul {
-	list-style-type: none;
+  list-style-type: none;
 }
 
 @@ access_erb
 
 <html>
-	<head>
-		<title><%= @config.name %> -- Access</title>
-		<link rel='stylesheet' type='text/css' href='/css/style.css'/>
-	</head>
-	<body>
-		<div id='page'>
-				<h1 id='header'><%= @config.name %> on <%=@hostname %></h1>
-				<h3 id='directory'>Location: <%=@pwd.gsub(/[^\/]/, '*') %></h3><hr/>
-			<br/>
-			<form id='access' method="post" action='/access'>
-				<% if flash[:error] %>
-					<p style='color: red'><%=flash[:error] %></p>
-				<% end %>
-				Access Code: <input type='text' name='code' autofocus /><br/>
-				<input type='submit' value='Access'/>
-			</form>		
-			<br/>
-			<hr/>
-		</div>
-	</body>
+  <head>
+    <title><%= @config.name %> -- Access</title>
+    <link rel='stylesheet' type='text/css' href='/css/style.css'/>
+  </head>
+  <body>
+    <div id='page'>
+        <h1 id='header'><%= @config.name %> on <%=@hostname %></h1>
+        <h3 id='directory'>Location: <%=@pwd.gsub(/[^\/]/, '*') %></h3><hr/>
+      <br/>
+      <form id='access' method="post" action='/access'>
+        <% if flash[:error] %>
+          <p style='color: red'><%=flash[:error] %></p>
+        <% end %>
+        Access Code: <input type='text' name='code' autofocus /><br/>
+        <input type='submit' value='Access'/>
+      </form>
+      <br/>
+      <hr/>
+    </div>
+  </body>
 </html>
 
 @@ upload_erb
 
 <html>
-	<head>
-		<title><%= @config.name %></title>
-		<link rel='stylesheet' type='text/css' href='/css/style.css'/>
-		<meta http-equiv='refresh' content="60;url=/" />
-		<script type='text/javascript'>
-			function close_confirm(elem) {
-				elem.parentNode.style.visibility='hidden';
-				stop_propagation();
-			}
-			function hide_all_confirms() {
-				targets = document.getElementsByClassName('confirm');
-				for(i=0; i<targets.length; i++) {
-					targets[i].style.visibility='hidden';
-				}
-			}
-			function stop_propagation() {
-				if (window.event) {
-					if (window.event.stopPropagation) {
-						window.event.stopPropagation();
-					} else {
-						window.event.cancelBubble = true;
-					}
-				}
-			}
-			function show_sibling(elem) {
-				target = elem.parentNode.getElementsByTagName("div")[0];
-				if (target.style.visibility == 'visible') {
-					target.style.visibility = 'hidden';
-				} else {
-					hide_all_confirms();
-					target.style.visibility='visible';
-				}
-				stop_propagation();
-			}
-		</script>
-	</head>
-	<body onclick="hide_all_confirms();">
-		<div id='page'>
-				<h1 id='header'><%= @config.name %> on <%=@hostname %></h1>
-				<h3 id='directory'>Location: <%=@pwd %></h3><hr/>
-			<% if @files.empty? %>
-				<p>No files in directory</p>
-			<% else %>
-				<ul id='files'><% @files.each do |file| %>
-					<li>
-						<a href='' onclick="show_sibling(this); return false;"><%=file %></a>
-						<div class='confirm' style='visibility: hidden; display: inline-block;'>
-							&nbsp; <==&nbsp; download?&nbsp;
-							<a href="/download/<%=file %>" onclick="close_confirm(this); return true;">Yes</a>
-							<a href='' onclick="close_confirm(this); return false;">No</a>
-						</div>
-					</li>
-				<% end %></ul>
-			<% end %><hr/>
-			<form id='upload' method="post" action='/upload' enctype='multipart/form-data'>
-				<h3>Upload File</h3>
-				<input type='file' name='file'/><br/>
-				<input type='submit' value='Upload'/>
-			</form>		
-		</div>
-	</body>
+  <head>
+    <title><%= @config.name %></title>
+    <link rel='stylesheet' type='text/css' href='/css/style.css'/>
+    <meta http-equiv='refresh' content="60;url=/" />
+    <script type='text/javascript'>
+      function close_confirm(elem) {
+        elem.parentNode.style.visibility='hidden';
+        stop_propagation();
+      }
+      function hide_all_confirms() {
+        targets = document.getElementsByClassName('confirm');
+        for(i=0; i<targets.length; i++) {
+          targets[i].style.visibility='hidden';
+        }
+      }
+      function stop_propagation() {
+        if (window.event) {
+          if (window.event.stopPropagation) {
+            window.event.stopPropagation();
+          } else {
+            window.event.cancelBubble = true;
+          }
+        }
+      }
+      function show_sibling(elem) {
+        target = elem.parentNode.getElementsByTagName("div")[0];
+        if (target.style.visibility == 'visible') {
+          target.style.visibility = 'hidden';
+        } else {
+          hide_all_confirms();
+          target.style.visibility='visible';
+        }
+        stop_propagation();
+      }
+    </script>
+  </head>
+  <body onclick="hide_all_confirms();">
+    <div id='page'>
+        <h1 id='header'><%= @config.name %> on <%=@hostname %></h1>
+        <h3 id='directory'>Location: <%=@pwd %></h3><hr/>
+      <% if @files.empty? %>
+        <p>No files in directory</p>
+      <% else %>
+        <ul id='files'><% @files.each do |file| %>
+          <li>
+            <a href='' onclick="show_sibling(this); return false;"><%=file %></a>
+            <div class='confirm' style='visibility: hidden; display: inline-block;'>
+              &nbsp; <==&nbsp; download?&nbsp;
+              <a href="/download/<%=file %>" onclick="close_confirm(this); return true;">Yes</a>
+              <a href='' onclick="close_confirm(this); return false;">No</a>
+            </div>
+          </li>
+        <% end %></ul>
+      <% end %><hr/>
+      <form id='upload' method="post" action='/upload' enctype='multipart/form-data'>
+        <h3>Upload File</h3>
+        <input type='file' name='file'/><br/>
+        <input type='submit' value='Upload'/>
+      </form>
+    </div>
+  </body>
 </html>
 
