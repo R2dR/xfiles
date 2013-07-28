@@ -33,8 +33,13 @@ h2. Setup for Linux
 Assuming you have a Ruby version 1.9 or greater installed
 
 <pre>$ gem install sinatra
-$ sudo cp xfiles /usr/local/bin/
+$ sudo cp bin/xfiles /usr/local/bin/
 $ sudo chmod 777 /usr/local/bin/xfiles
+</pre>
+
+or 
+
+<pre>$ gem install xfiles
 </pre>
 
 h2. Options

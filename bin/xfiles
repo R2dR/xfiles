@@ -1,5 +1,5 @@
 #!/usr/bin/env ruby
-VERSION="1.6"
+VERSION="1.6.2"
 require 'socket'
 require 'ostruct'
 require 'rubygems'
@@ -144,6 +144,7 @@ use Rack::Session::Cookie, :key => 'xfile_server',
 set :port, 2021
 set :bind, "0.0.0.0"
 enable :sessions
+enable :run
 
 FLASH={}
 def clear_flash
